@@ -70,6 +70,13 @@ contract BatchCallAndSponsor {
      */
     function execute(Call[] calldata calls) external payable {
         require(msg.sender == address(this), "Invalid authority");
+        
+        uint256 totalValue = 0;
+        for (uint256 i = 0; i < calls.length; i++) {
+            totalValue += calls[i].value;
+        }
+        require(msg.value == totalValue, "Incorrect value sent");
+
         _executeBatch(calls);
     }
 
