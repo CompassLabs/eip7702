@@ -1,10 +1,10 @@
-# BatchCallAndSponsor
+# BatchExecute
 
 An educational project demonstrating account abstraction and sponsored transaction execution using EIP-7702. This project uses Foundry for deployment, scripting, and testing.
 
 ## Overview
 
-The `BatchCallAndSponsor` contract enables batch execution of calls by verifying signatures over a nonce and batched call data. It supports:
+The `BatchExecute` contract enables batch execution of calls by verifying signatures over a nonce and batched call data. It supports:
 - **Direct execution**: by the smart account itself.
 - **Sponsored execution**: via an off-chain signature (by a sponsor).
 
@@ -67,7 +67,7 @@ forge test -vvv
 The output should look like this:
 
 ```bash
-Ran 4 tests for test/BatchCallAndSponsor.t.sol:BatchCallAndSponsorTest
+Ran 4 tests for test/BatchExecute.t.sol:BatchExecuteTest
 [PASS] testDirectExecution() (gas: 128386)
 Logs:
   Sending 1 ETH from Alice to Bob and transferring 100 tokens to Bob in a single transaction
@@ -94,8 +94,8 @@ Now that you’ve set up the project, it’s time to run the deployment script. 
 We use the following command:
 - **`--broadcast`**: Broadcasts the transactions to your local network.
 - **`--rpc-url 127.0.0.1:8545`**: Connects to your local network.
-- **`--tc BatchCallAndSponsorScript`**: Specifies the target contract for the script.
+- **`--tc BatchExecuteScript`**: Specifies the target contract for the script.
 
 ```bash
-forge script ./script/BatchCallAndSponsor.s.sol --tc BatchCallAndSponsorScript --broadcast --rpc-url 127.0.0.1:8545
+forge script ./script/BatchExecute.s.sol --tc BatchExecuteScript --broadcast --rpc-url 127.0.0.1:8545
 ```

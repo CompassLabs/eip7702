@@ -3,10 +3,10 @@ pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
-// import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /**
- * @title BatchCallAndSponsor
+ * @title BatchExecute
  * @notice An educational contract that allows batch execution of calls with nonce and signature verification.
  *
  * When an EOA upgrades via EIP‑7702, it delegates to this implementation.
@@ -20,7 +20,7 @@ import "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
  *
  * Replay protection is achieved by using a nonce that is included in the signed message.
  */
-contract BatchCallAndSponsor {
+contract BatchExecute is ReentrancyGuard {
     using ECDSA for bytes32;
 
     /// @notice A nonce used for replay protection.
@@ -39,37 +39,12 @@ contract BatchCallAndSponsor {
     event BatchExecuted(uint256 indexed nonce, Call[] calls);
 
     /**
-     * @notice Executes a batch of calls using an off–chain signature.
-     * @param calls An array of Call structs containing destination, ETH value, and calldata.
-     * @param signature The ECDSA signature over the current nonce and the call data.
-     *
-     * The signature must be produced off–chain by signing:
-     * The signing key should be the account’s key (which becomes the smart account’s own identity after upgrade).
-     */
-    function execute(Call[] calldata calls, bytes calldata signature) external payable {
-        // Compute the digest that the account was expected to sign.
-        bytes memory encodedCalls;
-        for (uint256 i = 0; i < calls.length; i++) {
-            encodedCalls = abi.encodePacked(encodedCalls, calls[i].to, calls[i].value, calls[i].data);
-        }
-        bytes32 digest = keccak256(abi.encodePacked(nonce, encodedCalls));
-        
-        bytes32 ethSignedMessageHash = MessageHashUtils.toEthSignedMessageHash(digest);
-
-        // Recover the signer from the provided signature.
-        address recovered = ECDSA.recover(ethSignedMessageHash, signature);
-        require(recovered == address(this), "Invalid signature");
-
-        _executeBatch(calls);
-    }
-
-    /**
      * @notice Executes a batch of calls directly.
      * @dev This function is intended for use when the smart account itself (i.e. address(this))
      * calls the contract. It checks that msg.sender is the contract itself.
      * @param calls An array of Call structs containing destination, ETH value, and calldata.
      */
-    function execute(Call[] calldata calls) external payable {
+    function execute(Call[] calldata calls) external payable nonReentrant {
         require(msg.sender == address(this), "Invalid authority");
         
         uint256 totalValue = 0;
