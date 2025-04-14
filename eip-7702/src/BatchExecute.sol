@@ -5,26 +5,8 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-/**
- * @title BatchExecute
- * @notice An educational contract that allows batch execution of calls with nonce and signature verification.
- *
- * When an EOA upgrades via EIP‑7702, it delegates to this implementation.
- * Off‑chain, the account signs a message authorizing a batch of calls. The message is the hash of:
- *    keccak256(abi.encodePacked(nonce, calls))
- * The signature must be generated with the EOA’s private key so that, once upgraded, the recovered signer equals the account’s own address (i.e. address(this)).
- *
- * This contract provides two ways to execute a batch:
- * 1. With a signature: Any sponsor can submit the batch if it carries a valid signature.
- * 2. Directly by the smart account: When the account itself (i.e. address(this)) calls the function, no signature is required.
- *
- * Replay protection is achieved by using a nonce that is included in the signed message.
- */
 contract BatchExecute is ReentrancyGuard {
     using ECDSA for bytes32;
-
-    /// @notice A nonce used for replay protection.
-    uint256 public nonce;
 
     /// @notice Represents a single call within a batch.
     struct Call {
@@ -36,7 +18,7 @@ contract BatchExecute is ReentrancyGuard {
     /// @notice Emitted for every individual call executed.
     event CallExecuted(address indexed sender, address indexed to, uint256 value, bytes data);
     /// @notice Emitted when a full batch is executed.
-    event BatchExecuted(uint256 indexed nonce, Call[] calls);
+    event BatchExecuted(Call[] calls);
 
     /**
      * @notice Executes a batch of calls directly.
@@ -61,14 +43,12 @@ contract BatchExecute is ReentrancyGuard {
      * @param calls An array of Call structs.
      */
     function _executeBatch(Call[] calldata calls) internal {
-        uint256 currentNonce = nonce;
-        nonce++; // Increment nonce to protect against replay attacks
 
         for (uint256 i = 0; i < calls.length; i++) {
             _executeCall(calls[i]);
         }
 
-        emit BatchExecuted(currentNonce, calls);
+        emit BatchExecuted(calls);
     }
 
     /**

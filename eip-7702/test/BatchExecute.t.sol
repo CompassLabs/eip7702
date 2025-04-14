@@ -31,7 +31,7 @@ contract BatchExecuteTest is Test {
     MockERC20 public token;
 
     event CallExecuted(address indexed to, uint256 value, bytes data);
-    event BatchExecuted(uint256 indexed nonce, BatchExecute.Call[] calls);
+    event BatchExecuted(BatchExecute.Call[] calls);
 
     function setUp() public {
         // Deploy the delegation contract (Alice will delegate calls to this contract).
